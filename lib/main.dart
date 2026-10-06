@@ -1,63 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:jitsi_meet_flutter_sdk/jitsi_meet_flutter_sdk.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-const String appId = String.fromEnvironment('AGORA_APP_ID', defaultValue: '252279af7bdd4045b3fba9d7df7a0333');
-
-void main() => runApp(const SadaApp());
+void main() => runApp(SadaApp());
 
 class SadaApp extends StatelessWidget {
-  const SadaApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'صدى',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: const HomePage(),
+      title: 'SADA',
+      theme: ThemeData(primarySwatch: Colors.green, fontFamily: 'Cairo'),
+      home: LoginScreen(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+// شاشة تسجيل الدخول بالتلفون/ايميل
+class LoginScreen extends StatefulWidget {
   @override
-  State<HomePage> createState() => _HomePageState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final _ctrl = TextEditingController(text: 'sada-room-1');
-  bool _isVideo = true;
+class _LoginScreenState extends State<LoginScreen> {
+  final _phoneController = TextEditingController();
+  final _nameController = TextEditingController();
+  bool isPhone = true;
+
+  Future<void> _login() async {
+    if (_nameController.text.isEmpty || _phoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('اكمل البيانات')));
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_name', _nameController.text);
+    await prefs.setString('user_contact', _phoneController.text);
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('صدى - SADA'), backgroundColor: const Color(0xFF0E7A4C), centerTitle: true),
+      backgroundColor: Color(0xFF22C55E),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(24),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 30),
-            const Icon(Icons.call, size: 80, color: Color(0xFF0E7A4C)),
-            const SizedBox(height: 20),
-            const Text('مرحبا بك في صدى', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            TextField(controller: _ctrl, decoration: const InputDecoration(labelText: 'اسم الغرفة', border: OutlineInputBorder())),
-            const SizedBox(height: 20),
+            Icon(Icons.mic, size: 80, color: Colors.white),
+            SizedBox(height: 16),
+            Text('صـدى SADA', style: TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold)),
+            SizedBox(height: 40),
+            TextField(controller: _nameController, decoration: InputDecoration(hintText: 'اسمك', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+            SizedBox(height: 12),
             Row(children: [
-              Expanded(child: RadioListTile(value: true, groupValue: _isVideo, onChanged: (v)=>setState(()=>_isVideo=v!), title: const Text('فيديو'))),
-              Expanded(child: RadioListTile(value: false, groupValue: _isVideo, onChanged: (v)=>setState(()=>_isVideo=v!), title: const Text('صوت'))),
+              ChoiceChip(label: Text('تلفون'), selected: isPhone, onSelected: (v){setState(()=>isPhone=true);}),
+              SizedBox(width:8),
+              ChoiceChip(label: Text('ايميل'), selected: !isPhone, onSelected: (v){setState(()=>isPhone=false);}),
             ]),
-            const Spacer(),
-            SizedBox(width: double.infinity, child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0E7A4C), padding: const EdgeInsets.all(16)),
-              onPressed: () async {
-                await [Permission.microphone, Permission.camera].request();
-                if(!mounted) return;
-                Navigator.push(context, MaterialPageRoute(builder: (_) => CallPage(channel: _ctrl.text, isVideo: _isVideo)));
-              },
-              icon: const Icon(Icons.call, color: Colors.white),
-              label: const Text('ابدأ المكالمة', style: TextStyle(color: Colors.white, fontSize: 18)),
-            )),
+            SizedBox(height:12),
+            TextField(controller: _phoneController, keyboardType: isPhone? TextInputType.phone : TextInputType.emailAddress, decoration: InputDecoration(hintText: isPhone? 'رقم التلفون' : 'الايميل', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+            SizedBox(height: 20),
+            ElevatedButton(onPressed: _login, style: ElevatedButton.styleFrom(backgroundColor: Colors.black, minimumSize: Size(double.infinity, 50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), child: Text('دخول', style: TextStyle(color: Colors.white, fontSize: 18))),
           ],
         ),
       ),
@@ -65,38 +69,63 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class CallPage extends StatefulWidget {
-  final String channel; final bool isVideo;
-  const CallPage({super.key, required this.channel, required this.isVideo});
+// شاشة الغرف
+class HomeScreen extends StatefulWidget {
   @override
-  State<CallPage> createState() => _CallPageState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _CallPageState extends State<CallPage> {
-  late final RtcEngine _engine;
-  bool _joined = false; int? _remote;
+class _HomeScreenState extends State<HomeScreen> {
+  final _roomController = TextEditingController(text: 'sada1');
+  final _jitsi = JitsiMeet();
+  String userName = '';
+
   @override
-  void initState() { super.initState(); _init(); }
-  Future<void> _init() async {
-    _engine = createAgoraRtcEngine();
-    await _engine.initialize(const RtcEngineContext(appId: appId));
-    _engine.registerEventHandler(RtcEngineEventHandler(
-      onJoinChannelSuccess: (_, __) => setState(()=>_joined=true),
-      onUserJoined: (_, uid, __) => setState(()=>_remote=uid),
-      onUserOffline: (_, __, ___) => setState(()=>_remote=null),
-    ));
-    await _engine.enableVideo(); await _engine.startPreview();
-    await _engine.joinChannel(token: '', channelId: widget.channel, uid: 0, options: const ChannelMediaOptions());
+  void initState(){_loadUser(); super.initState();}
+  _loadUser() async {final p=await SharedPreferences.getInstance(); setState(()=>userName=p.getString('user_name')??'');}
+
+  Future<void> _join() async {
+    if(_roomController.text.trim().isEmpty) return;
+    var options = JitsiMeetConferenceOptions(
+      roomName: _roomController.text.trim().toLowerCase().replaceAll(' ', ''),
+      serverUrl: 'https://meet.jit.si',
+      userInfo: JitsiMeetUserInfo(displayName: userName, email: ''),
+      configOverrides: {
+        "startWithAudioMuted": false, // الصوت شغال طوالي
+        "startWithVideoMuted": false, // الكاميرا شغالة
+        "enableLobbyChat": false,
+        "prejoinPageEnabled": false, // مافي انتظار
+        "disableInviteFunctions": true,
+      },
+      featureFlags: {
+        "unsaferoomwarning.enabled": false,
+        "lobby-mode.enabled": false,
+        "prejoinpage.enabled": false,
+        "audioMute.enabled": true,
+        "videoMute.enabled": true,
+        "chat.enabled": true,
+        "invite.enabled": false,
+      },
+    );
+    await _jitsi.join(options);
   }
+
   @override
-  void dispose() { _engine.leaveChannel(); _engine.release(); super.dispose(); }
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.black, body: Stack(children: [
-      Center(child: _remote==null ? const Text('في انتظار صديقك...\nارسل له اسم الغرفة', textAlign: TextAlign.center, style: TextStyle(color: Colors.white)) : AgoraVideoView(controller: VideoViewController.remote(rtcEngine: _engine, canvas: VideoCanvas(uid: _remote), connection: RtcConnection(channelId: widget.channel)))),
-      Positioned(top: 40, right: 20, width: 110, height: 150, child: ClipRRect(borderRadius: BorderRadius.circular(10), child: AgoraVideoView(controller: VideoViewController(rtcEngine: _engine, canvas: const VideoCanvas(uid: 0))))),
-      Positioned(bottom: 40, left: 0, right: 0, child: Center(child: FloatingActionButton(backgroundColor: Colors.red, onPressed: ()=>Navigator.pop(context), child: const Icon(Icons.call_end)))),
-      if(!_joined) const Center(child: CircularProgressIndicator()),
-    ]));
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(title: Text('مرحبا $userName'), backgroundColor: Color(0xFF22C55E)),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(children: [
+          Text('اكتب اسم الغرفة وشاركو مع صديقك', style: TextStyle(fontSize: 16)),
+          SizedBox(height:20),
+          TextField(controller: _roomController, decoration: InputDecoration(labelText: 'اسم الغرفة (مثلا sada1)', border: OutlineInputBorder(), prefixIcon: Icon(Icons.video_call))),
+          SizedBox(height:20),
+          ElevatedButton(onPressed: _join, style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF22C55E), minimumSize: Size(double.infinity, 55)), child: Text('ابدأ المكالمة - فيديو وصوت', style: TextStyle(fontSize:18))),
+          SizedBox(height:20),
+          Card(child: ListTile(leading: Icon(Icons.info), title: Text('كيف يدخل صديقك؟'), subtitle: Text('1. يثبت نفس التطبيق\n2. يكتب نفس اسم الغرفة بالضبط\n3. الصوت والكاميرا حيشتغلو اوتوماتيك\n4. في المكالمة اسحب الشاشة لفوق لتلقي ازرار: مايك، كاميرا، قلب الكاميرا'))),
+        ]),
+      ),
+    );
   }
 }
