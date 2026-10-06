@@ -1,13 +1,18 @@
-name: sada_app
-description: SADA - Sudanese Voice & Video Calling App
+name: sada
+description: SADA video calls
 publish_to: 'none'
-version: 1.0.0+1
+version: 2.0.0+2
+
 environment:
   sdk: ">=3.0.0 <4.0.0"
+
 dependencies:
   flutter:
     sdk: flutter
-  agora_rtc_engine: ^6.3.2
-  permission_handler: ^11.3.1
+  jitsi_meet_flutter_sdk: ^1.0.0
+  shared_preferences: ^2.2.2
+
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon.png
