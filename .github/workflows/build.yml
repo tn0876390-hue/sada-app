@@ -1,0 +1,26 @@
+name: Build SADA APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+      - name: Create base project
+        run: |
+          flutter create temp_build
+          cp pubspec.yaml temp_build/
+          cp lib/main.dart temp_build/lib/
+          cd temp_build
+          flutter pub get
+      - name: Build APK
+        run: |
+          cd temp_build
+          flutter build apk --release --dart-define=AGORA_APP_ID=252279af7bdd4045b3fba9d7df7a0333
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sada-apk
+          path: temp_build/build/app/outputs/flutter-apk/app-release.apk
