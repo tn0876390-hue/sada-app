@@ -1,15 +1,16 @@
 name: sada
 description: SADA video calls
 publish_to: 'none'
-version: 2.0.0+2
+version: 2.0.0+5
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  jitsi_meet_flutter_sdk: ^1.0.0
+  jitsi_meet_flutter_sdk: ^13.2.0
   shared_preferences: ^2.2.2
 
 flutter:
