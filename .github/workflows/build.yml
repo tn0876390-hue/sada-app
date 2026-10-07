@@ -17,13 +17,12 @@ jobs:
       - name: Rebuild Android
         run: |
           rm -rf android
-          flutter create --platforms=android --org com.sada.app --project-name sada.
+          flutter create. --platforms=android
           flutter pub get
 
       - name: Fix minSdk 24
         run: |
           echo "flutter.minSdkVersion=24" >> android/local.properties
-          cat android/local.properties
 
       - name: Build APK
         run: flutter build apk --release
