@@ -14,19 +14,17 @@ jobs:
           flutter-version: '3.24.5'
           channel: 'stable'
 
-      - name: Rebuild Android
+      - name: Rebuild
         run: |
           rm -rf android
-          flutter create. --platforms=android --org com.sada.app --project-name sada
+          flutter create. --platforms=android
           flutter pub get
 
-      - name: Patch minSdk 24
+      - name: Fix minSdk
         run: |
-          sed -i 's/minSdkVersion 21/minSdkVersion 24/g' android/app/build.gradle
-          sed -i 's/minSdk 21/minSdk 24/g' android/app/build.gradle
-          sed -i 's/minSdkVersion 23/minSdkVersion 24/g' android/app/build.gradle
-          sed -i 's/minSdk 23/minSdk 24/g' android/app/build.gradle
-          cat android/app/build.gradle | grep -A1 minSdk
+          echo "flutter.minSdkVersion=24" >> android/local.properties
+          sed -i 's/flutter.minSdkVersion.*/flutter.minSdkVersion=24/g' android/local.properties
+          cat android/local.properties
 
       - name: Build APK
         run: flutter build apk --release
