@@ -14,24 +14,22 @@ jobs:
           flutter-version: '3.24.5'
           channel: 'stable'
 
-      - name: Rebuild Android Folder
+      - name: Rebuild Android
         run: |
           rm -rf android
-          flutter create. --platforms=android --project-name sada --org com.sada.app
+          flutter create. --platforms=android --org com.sada.app --project-name sada
           flutter pub get
 
-      - name: Force minSdk 24 for Jitsi
+      - name: Patch minSdk 24
         run: |
-          echo "Patching to 24..."
-          # لكل انواع الملفات
-          find android -name "build.gradle" -o -name "build.gradle.kts" | xargs -I {} sh -c 'echo "Patching {}"; sed -i "s/minSdkVersion 21/minSdkVersion 24/g" {}; sed -i "s/minSdk 21/minSdk 24/g" {}; sed -i "s/minSdkVersion 23/minSdkVersion 24/g" {}; sed -i "s/minSdk 23/minSdk 24/g" {}; sed -i "s/compileSdk 33/compileSdk 34/g" {}; sed -i "s/compileSdkVersion 33/compileSdkVersion 34/g" {}; sed -i "s/compileSdk 31/compileSdk 34/g" {}'
-
-          echo "=== RESULT ==="
-          grep -r "minSdk" android/app/build.gradle* || grep -r "minSdk" android/app/src -n || cat android/app/build.gradle | grep minSdk
-          grep -r "compileSdk" android/app/build.gradle* | head -n 5
+          sed -i 's/minSdkVersion 21/minSdkVersion 24/g' android/app/build.gradle
+          sed -i 's/minSdk 21/minSdk 24/g' android/app/build.gradle
+          sed -i 's/minSdkVersion 23/minSdkVersion 24/g' android/app/build.gradle
+          sed -i 's/minSdk 23/minSdk 24/g' android/app/build.gradle
+          cat android/app/build.gradle | grep -A1 minSdk
 
       - name: Build APK
-        run: flutter build apk --release --verbose
+        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
