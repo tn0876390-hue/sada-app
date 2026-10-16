@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sada AI Agent</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+<header><h1>🎙️ صدى AI Agent</h1><p>وكيل اجتماعات ذكي | مرشح لجائزة دبي 2.5M</p><span class="badge">Create AI Agents Championship 2026</span></header>
+<div id="join-screen" class="card">
+<input id="username" placeholder="اسمك"><input id="room-id" placeholder="اسم الغرفة: sada-ai-123">
+<button id="join-btn">🚀 انضمام كوكيل ذكي</button>
+</div>
+<div id="call-screen" class="hidden">
+<div id="videos" class="videos"></div>
+<div class="ai-panel"><h3>🤖 Sada AI Agent</h3>
+<div class="ai-controls">
+<button id="transcribe-btn">🎤 بدء النسخ</button>
+<button id="summarize-btn">📝 تلخيص</button>
+<button id="tasks-btn">✅ مهام</button>
+</div>
+<div id="ai-output" class="ai-output">الوكيل جاهز...</div>
+<div id="summary-box" class="summary-box hidden"></div>
+</div>
+<div class="controls"><button id="mute-btn">🔇 كتم</button><button id="video-btn">📷 كاميرا</button><button id="share-btn">🖥️ مشاركة</button><button id="leave-btn" class="leave">🚪 مغادرة</button></div>
+<p id="room-info"></p></div></div>
+<script src="https://unpkg.com/peerjs@1.5.0/dist/peerjs.min.js"></script><script src="script.js"></script></body></html>
