@@ -1,0 +1,22 @@
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Tajawal',Tahoma,sans-serif}
+body{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:15px}
+.app{width:100%;max-width:1000px}
+header{text-align:center;color:white;margin-bottom:20px}
+header h1{font-size:38px}header p{opacity:0.9;margin-top:5px}
+.badge{background:gold;color:#000;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:bold;display:inline-block;margin-top:8px}
+.card{background:white;border-radius:20px;padding:28px;box-shadow:0 15px 50px rgba(0,0,0,.3);text-align:center}
+.card input{width:100%;padding:14px;margin:8px 0;border:2px solid #eee;border-radius:12px;font-size:16px}
+.card button{width:100%;padding:15px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer}
+.hidden{display:none!important}
+.videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:15px}
+.videos video{width:100%;height:240px;background:#000;border-radius:16px;object-fit:cover}
+.video-wrapper{position:relative}.label{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:white;padding:3px 10px;border-radius:20px;font-size:12px}
+.ai-panel{background:white;border-radius:16px;padding:18px;margin-bottom:15px}
+.ai-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ai-controls button{padding:10px 14px;border-radius:8px;border:1px solid #ddd;background:#f0f0ff;cursor:pointer}
+.ai-output{background:#f8f9ff;border:1px solid #e0e0ff;border-radius:10px;padding:12px;min-height:80px;max-height:150px;overflow-y:auto;font-size:14px;white-space:pre-wrap}
+.summary-box{background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:12px;margin-top:12px;font-size:14px}
+.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.controls button{padding:10px 18px;border:none;border-radius:30px;background:white;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.controls button.leave{background:#ff4757;color:white}
+#room-info{text-align:center;color:white;margin-top:8px;font-size:13px}
